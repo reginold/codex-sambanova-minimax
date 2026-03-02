@@ -63,7 +63,6 @@ general_settings:
 
 #### Why `openai/MiniMax-M2.5` instead of `sambanova/MiniMax-M2.5`?
 
-- **Tool/Function Calling Support** — SambaNova's native API (`sambanova/`) does not support Codex's tool use features. You'll get: `litellm.UnsupportedParamsError: sambanova does not support parameters: ['tools']`
 - **OpenAI-Compatible Format** — By using the `openai/` prefix, LiteLLM routes through its OpenAI-compatible interface for better compatibility
 - **Same Backend** — The actual API call still goes to SambaNova's endpoint, so you still get fast inference and low pricing
 
@@ -80,23 +79,50 @@ This starts two services:
 
 > If you modify `proxy_config.yaml`, run `docker compose restart litellm` to apply changes.
 
-### Step 6: Configure Codex CLI
+## Step 6: Configure Codex to Use LiteLLM
 
-Create or update `~/.codex/config.toml`:
+Create or update ~/.codex/config.toml with the following configuration:
 
 ```toml
-[model_providers.openai]
+# Recall that in TOML, root keys must be listed before tables.
+model = "MiniMax-M2.5"
+model_provider = "litellm"
+model_reasoning_effort = "high"
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+personality = "pragmatic"
+
+[model_providers.litellm]
 name = "LiteLLM Local"
 base_url = "http://localhost:4000/v1"
 env_key = "CODEX_LITELLM_KEY"
 wire_api = "chat"
-query_params = { "temperature" = "1", "do_sample" = "true" }
+query_params = {"temperature" = "1", "do_sample" = "true"}
 
 [sandbox_workspace_write]
 network_access = true
+
+[analytics]
+enabled = false
+
+[projects."/Users/your_path/work"]
+trust_level = "trusted"
+
+web_search = "live"
 ```
 
-> Use `wire_api = "chat"` because LiteLLM exposes `/v1/chat/completions` as its main endpoint.
+> **Reference:** For a complete list of all Codex config.toml options, see the [OpenAI Codex Configuration Documentation](https://developers.openai.com/codex/config-sample).
+
+### Why `wire_api = "chat"`?
+
+We use `wire_api = "chat"` instead of `wire_api = "response"` because:
+
+1. **LiteLLM's primary interface** — LiteLLM exposes `/v1/chat/completions` as its main endpoint, which expects the chat completions format
+2. **Better compatibility** — The chat format is the modern standard for LLM interactions and is universally supported by all providers
+3. **Full feature support** — Features like streaming, tools/function calling work better with the chat completions format
+4. **SambaNova/MiniMax optimized** — The MiniMax-M2.5 model on SambaNova is optimized for the chat completions format
+
+Now Codex will route requests through LiteLLM to SambaNova's MiniMax-M2.5 model!
 
 ### Step 7: View Logs and Data
 

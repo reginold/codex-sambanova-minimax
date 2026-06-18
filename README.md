@@ -18,15 +18,13 @@ A LiteLLM proxy configuration for running SambaNova models (MiniMax-M2.5) with D
 ### Step 1: Install Codex CLI
 
 ```bash
-npm i -g @openai/codex@0.57.0
+npm i -g @openai/codex
 ```
-
-> We recommend version 0.57.0 for stable compatibility with LiteLLM.
 
 ### Step 2: Clone the Project
 
 ```bash
-git clone https://github.com/reginold/litellm-sambanova.git
+git clone https://github.com/reggie-lu/litellm-sambanova.git
 cd litellm-sambanova
 ```
 

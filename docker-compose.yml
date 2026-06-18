@@ -10,6 +10,7 @@ services:
       - "5433:5432"
     volumes:
       - litellm-sambanova_pgdata:/var/lib/postgresql/data
+      - ./init_views.sql:/docker-entrypoint-initdb.d/init_views.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U litellm"]
       interval: 5s
@@ -34,4 +35,3 @@ services:
 
 volumes:
   litellm-sambanova_pgdata:
-    external: true
